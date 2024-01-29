@@ -46,6 +46,8 @@ type Props = {
     className?: string,
     /** The fallback option value when other options are all unselected. Default option cannot be selected at the same time as other options. `selectedValues` must not be empty when this option is used. */
     defaultValue?: SelectOptionValueProp,
+     /** Disabled options (can be empty) */
+    disabledValues: Array<SelectOptionValueProp>,
     /** An optional error to show within a tooltip. */
     error?: React.Node,
     /** Position of error message tooltip */
@@ -514,25 +516,29 @@ class BaseSelectField extends React.Component<Props, State> {
             const { value } = item;
 
             const isSelected = selectedValues.includes(value);
-
+            
+            const isDisabled = disabledValues.includes(value);
+            
             const isClearOption = shouldShowClearOption && value === CLEAR;
 
             const itemProps: Object = {
-                className: classNames('select-option', { 'is-clear-option': isClearOption }),
+                className: classNames('select-option', { 'is-clear-option': isClearOption, 'is-disabled-option': isDisabled }),
                 key: index,
-                /* preventDefault on click to prevent wrapping label from re-triggering the select button */
-                onClick: event => {
-                    event.preventDefault();
-                    if (isClearOption) {
-                        this.handleClearClick();
-                    } else {
-                        this.selectOption(index);
-                    }
-                },
-                onMouseEnter: () => {
-                    this.setActiveItem(index, false);
-                },
-                setActiveItemID: this.setActiveItemID,
+                ...(isDisabled ? {} : {
+                    /* preventDefault on click to prevent wrapping label from re-triggering the select button */
+                    onClick: event => {
+                        event.preventDefault();
+                        if (isClearOption) {
+                            this.handleClearClick();
+                        } else {
+                            this.selectOption(index);
+                        }
+                    },
+                    onMouseEnter: () => {
+                        this.setActiveItem(index, false);
+                    },
+                    setActiveItemID: this.setActiveItemID,
+                })
             };
 
             if (index === activeItemIndex) {
